@@ -1,5 +1,5 @@
 {
-  "name": "@codecolorist/fruity-frida",
+  "name": "fruity-frida",
   "version": "0.0.1",
   "description": "",
   "main": "./out/index.js",
