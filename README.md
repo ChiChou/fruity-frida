@@ -38,11 +38,13 @@ npm install -g fruity-frida
 
 By default, all the scripts choose one of your iDevices connected to USB. These frida options are supported.
 
->  -U, --usb            connect to USB device
->  -R, --remote         connect to remote frida-server
->  -D, --device <uuid>  connect to device with the given ID, useful when you have multiple devices
->  -H, --host <host>    connect to remote frida-server on HOST
->  -h, --help           display help for command
+```
+-U, --usb            connect to USB device
+-R, --remote         connect to remote frida-server
+-D, --device <uuid>  connect to device with the given ID, useful when you have multiple devices
+-H, --host <host>    connect to remote frida-server on HOST
+-h, --help           display help for command
+```
 
 However, I can't promise they will work, since the lockdown (a protocol to talk to your device, just like libimobiledevices)
 functions from [frida-node](https://github.com/frida/frida-node) seems to only support USB connection.
