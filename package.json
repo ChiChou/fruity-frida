@@ -6,7 +6,6 @@
   "bin": {
     "ios-shell": "./bin/ssh.js",
     "run-frida-server": "./bin/server.js",
-    "ios-apps": "./bin/apps.js",
     "iproxy-js": "./bin/iproxy.js",
     "ios-debug": "./bin/debug.js",
     "get-ios-gadget": "./bin/gadget.js"

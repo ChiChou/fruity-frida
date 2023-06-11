@@ -60,22 +60,27 @@ async function debug(device: Device, mode: DebugMode, target: string) {
   }
 }
 
+
 async function main() {
-  const program = new Command('Remote Debug with LLDB');
-  const args = useCommonArgs(program);
-  const device = await getDeviceFromArg(args);
+  const program = useCommonArgs(new Command('Remote Debug with LLDB'));
+
+  let device: Device;
+
+  program.hook('preAction', async (cmd: Command, actionCmd: Command) => {
+    device = await getDeviceFromArg(cmd);
+  });
 
   program
     .command('attach <target>')
     .description('attach to process or pid')
-    .action(async (target) => {
+    .action((target) => {
       debug(device, DebugMode.Attach, target);
     });
 
   program
     .command('app <target>')
     .description('spawn app')
-    .action(async (target) => {
+    .action((target) => {
       debug(device, DebugMode.Spawn, target);
     });
 
@@ -83,12 +88,9 @@ async function main() {
     .command('apps')
     .description('list apps')
     .action(async () => {
-      const allApps = await apps(device);
-      console.table(allApps.map(app => ({
-        name: app.CFBundleDisplayName,
-        bundleId: app.CFBundleIdentifier,
-        version: app.CFBundleVersion,
-      })));
+      for (const app of await apps(device)) {
+        console.log(`${app.CFBundleName} [${app.CFBundleIdentifier}] (${app.CFBundleVersion})`);
+      }
     });
 
   program.parse(process.argv);

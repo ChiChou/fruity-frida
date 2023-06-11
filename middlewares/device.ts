@@ -1,8 +1,26 @@
 import * as frida from "frida";
 
-import { Options } from './args.js';
+import { Program } from './args.js';
+import { Command } from "commander";
 
-export function getDeviceFromArg(opt: Options): Promise<frida.Device> {
+export function getDeviceFromArg(cmd: Command): Promise<frida.Device> {
+  const opt = cmd as Program;
+
+  let count = 0;
+  if (opt.usb) count++;
+  if (opt.device) count++;
+  if (opt.host) count++;
+  if (opt.remote) count++;
+
+  if (count === 0) {
+    opt.usb = true;
+    count++;
+  }
+  
+  if (count !== 1) {
+    cmd.help();
+  }
+
   if (opt.usb) {
     return frida.getUsbDevice();
   } else if (opt.device) {

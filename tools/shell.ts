@@ -5,9 +5,8 @@ import useCommonArgs from '../middlewares/args.js';
 import { getDeviceFromArg } from '../middlewares/device.js';
 
 async function main() {
-  const program = new Command('Shell');
-  const args = useCommonArgs(program);
-  const device = await getDeviceFromArg(args);
+  const program = useCommonArgs(new Command('Shell'));
+  const device = await getDeviceFromArg(program.parse(process.argv));
   const client = await connect(device);
 
   try {

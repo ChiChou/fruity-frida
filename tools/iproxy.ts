@@ -6,8 +6,7 @@ import useCommonArgs from '../middlewares/args.js';
 import { getDeviceFromArg } from '../middlewares/device.js';
 
 async function main() {
-  const program = new Command('iproxy');
-  const args = useCommonArgs(program);
+  const program = useCommonArgs(new Command('iproxy'));
 
   program
     .argument('source', 'source port')
@@ -22,7 +21,7 @@ async function main() {
       if (dst.toString() !== destination)
         throw Error('invalid destination port');
 
-      const device = await getDeviceFromArg(args);
+      const device = await getDeviceFromArg(program);
       net.createServer(async (socket) => {
         const channel = await device.openChannel(`tcp:${destination}`);
         socket
