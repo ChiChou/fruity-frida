@@ -19,7 +19,7 @@ enum DebugMode {
 async function debug(device: Device, mode: DebugMode, target: string) {
   const client = await connect(device);
   try {
-    await deploy(client);
+    const serverPath = await deploy(client);
     const port = await findFreePort(device);
     console.log('remote free port', port)
 
@@ -29,10 +29,10 @@ async function debug(device: Device, mode: DebugMode, target: string) {
         const app = allApps.find(app => app.CFBundleIdentifier === target || app.CFBundleName === target);
         if (!app) throw Error('app not found');
         const path = app.Path;
-        return spawn(client, path, port);
+        return spawn(client, serverPath, path, port);
       } else if (mode === DebugMode.Attach) {
         console.log(`attach to ${target}`);
-        return attach(client, target, port);
+        return attach(client, serverPath, target, port);
       } else {
         throw Error('unknown mode');
       }
@@ -61,7 +61,7 @@ async function debug(device: Device, mode: DebugMode, target: string) {
 }
 
 async function main() {
-  const program = new Command('Deploy frida-server');
+  const program = new Command('Remote Debug with LLDB');
   const args = useCommonArgs(program);
   const device = await getDeviceFromArg(args);
 

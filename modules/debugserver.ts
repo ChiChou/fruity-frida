@@ -1,9 +1,9 @@
-import path from 'path';
 import readline from 'readline';
+import { promises as fsp } from 'fs';
 
 import { Client, ClientChannel } from 'ssh2';
 
-import { upload } from './ssh.js';
+import { upload, write } from './ssh.js';
 import { resource } from '../lib/pathutil.js';
 
 const CANIDATES = [
@@ -16,7 +16,7 @@ const DEBUGSERVER = '/tmp/debugserver';
 
 function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
   const keyword = 'Listening to port ';
-  
+
   return new Promise((resolve, reject) => {
     client.shell((err, stream) => {
       if (err) reject(err);
@@ -42,13 +42,13 @@ function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
 }
 
 // shell injection, but unvoidable
-export async function spawn(client: Client, path: string, port: number): Promise<ClientChannel> {
-  const cmd = `${DEBUGSERVER} -x backboard 127.1:${port} ${path}`;
+export async function spawn(client: Client, server: string, path: string, port: number): Promise<ClientChannel> {
+  const cmd = `${server} -x backboard 127.1:${port} ${path}`;
   return debugserver(client, cmd);
 }
 
-export function attach(client: Client, target: number | string, port: number) {
-  const cmd = `${DEBUGSERVER} 127.1:${port} -a ${target}`;
+export function attach(client: Client, server: string, target: number | string, port: number) {
+  const cmd = `${server} 127.1:${port} -a ${target}`;
   return debugserver(client, cmd);
 }
 
@@ -65,22 +65,30 @@ export async function deploy(client: Client) {
     })
   }
 
-  const entXML = resource('debugserver.ent.xml');
   const remoteXML = '/tmp/ent.xml';
-  await upload(client, entXML, remoteXML);
+  {
+    const entXML = resource('debugserver.ent.xml');
+    const content = await fsp.readFile(entXML);
+    await write(client, content, remoteXML);
+  }
 
-  let found = false;
+  let dest = DEBUGSERVER;
+
+  const probe = '/test.txt'
+  const hasRootFS = await cmd(`echo "test" > ${probe} && rm ${probe}`);
+  if (hasRootFS) {
+    dest = '/usr/bin/debugserver';
+  }
+
   for (const candiate of CANIDATES) {
     if (await cmd(`test -f ${candiate}`)) {
-      await cmd(`cp ${candiate} ${DEBUGSERVER}`);
-      await cmd(`ldid -S${remoteXML} ${DEBUGSERVER}`);
-      found = true;
+      await cmd(`cp ${candiate} ${dest}`);
+      await cmd(`ldid -S${remoteXML} ${dest}`);
 
-      console.log(`signed ${candiate} debugserver to ${DEBUGSERVER}`);
-      break;
+      console.log(`signed ${candiate} debugserver to ${dest}`);
+      return dest;
     }
   }
 
-  return found;
-
+  throw new Error('debugserver binary not found. Please make sure DDI is mounted.');
 }
