@@ -1,14 +1,15 @@
 {
   "name": "fruity-frida",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "./out/index.js",
   "bin": {
     "ios-shell": "./bin/ssh.js",
-    "ios-pull": "./bin/pull.js",
+    "run-frida-server": "./bin/server.js",
     "ios-apps": "./bin/apps.js",
     "iproxy-js": "./bin/iproxy.js",
-    "ios-debug": "./bin/debug.js"
+    "ios-debug": "./bin/debug.js",
+    "get-ios-gadget": "./bin/gadget.js"
   },
   "scripts": {
     "prepack": "npm run compile",
