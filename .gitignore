@@ -1,4 +1,5 @@
 .github-token
+.DS_Store
 
 *.deb
 
