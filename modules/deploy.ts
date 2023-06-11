@@ -78,7 +78,7 @@ async function getFridaDeb() {
 }
 
 export async function deploy(client: Client, cwd: string = '/tmp/frida') {
-  const dest = path.join(cwd, 'data.tar.xz');
+  const dest = '/tmp/data.tar.xz';
   const xz = await getFridaDeb();
 
   // todo: check installation
