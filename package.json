@@ -11,6 +11,7 @@
     "ios-debug": "./bin/debug.js"
   },
   "scripts": {
+    "prepack": "npm run compile",
     "compile": "tsc",
     "watch": "tsc -w"
   },
