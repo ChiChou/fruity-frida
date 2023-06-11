@@ -26,7 +26,7 @@ async function debug(device: Device, mode: DebugMode, target: string) {
     async function getStream() {
       if (mode === DebugMode.Spawn) {
         const allApps = await apps(device);
-        const app = allApps.find(app => app.CFBundleIdentifier === target || app.CFBundleName);
+        const app = allApps.find(app => app.CFBundleIdentifier === target || app.CFBundleName === target);
         if (!app) throw Error('app not found');
         const path = app.Path;
         return spawn(client, path, port);
