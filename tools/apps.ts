@@ -1,0 +1,17 @@
+import { Command } from "commander";
+
+import useCommonArgs from "../middlewares/args";
+import { getDeviceFromArg } from "../middlewares/device";
+import { apps } from "../modules/installerproxy";
+
+async function main() {
+  const program = new Command('Deploy frida-server');
+  const args = useCommonArgs(program);
+  const device = await getDeviceFromArg(args);
+  
+  for (const app of await apps(device)) {
+    console.log(app);
+  }
+}
+
+main();
