@@ -92,7 +92,6 @@ class SCPReceiver extends Duplex {
   remain = 0;
 
   components: string[] = [];
-  trunks: Buffer[] = [];
   output: WriteStream | null = null;
 
   mtime: Date | null = null;
@@ -177,7 +176,6 @@ class SCPReceiver extends Duplex {
     if (isFile) {
       this.state = State.Data;
       this.output = createWriteStream(dest, { mode });
-      this.current = dest;
       this.remain = size;
     } else if (isDir) {
       await fsp.mkdir(dest, { recursive: true });
@@ -190,41 +188,37 @@ class SCPReceiver extends Duplex {
 
   _write(chunk: Buffer, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
     if (this.state == State.Readline) {
-      const index = chunk.indexOf(0x0A); // \n
-      if (index > -1) {
-        this.trunks.push(chunk.slice(0, index));
-        const line = Buffer.concat(this.trunks).toString();
-        this.trunks = [chunk.slice(index + 1)];
-        this.handleLine(line);
-        this.ack();
-      } else {
-        this.trunks.push(chunk);
-      }
-    } else if (this.state == State.Data) {
-      if (!this.output || !this.current) throw new Error('Invalid state');
-      if (chunk.length > this.remain) {
-        const current = this.current;
-        const mtime = this.mtime;
-        const atime = this.atime;
+      if (chunk[chunk.length - 1] !== 0x0A)
+        return callback(new Error('Invalid protocol, expect \\n'));
 
+      this.handleLine(chunk.toString().trimEnd());
+      this.ack();
+    } else if (this.state == State.Data) {
+      if (!this.output)
+        return callback(new Error('Invalid state'));
+
+      if (chunk.length > this.remain) {
+        const current = this.output.path;
+        const { mtime, atime } = this;
         if (atime && mtime) {
-          this.output.once('finish', () => {
+          this.output.once('finish', async () => {
+            this.ack();
             fsp.utimes(current, atime, mtime);
           });
         }
 
+        if (chunk[this.remain] !== 0)
+          return callback(new Error('Protocol Error'));
+
         this.output.end(chunk.slice(0, this.remain));
         this.state = State.Readline;
-        if (chunk[this.remain] !== 0) throw new Error('Protocol Error');
-        this.trunks = [chunk.slice(this.remain + 1)];
-        this.ack();
         this.remain = 0;
       } else {
         this.output.write(chunk);
         this.remain -= chunk.length;
       }
     } else {
-      throw new Error('Invalid state');
+      callback(new Error('Invalid state'));
     }
 
     callback();
