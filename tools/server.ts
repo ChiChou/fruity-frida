@@ -7,10 +7,9 @@ import { start } from '../modules/deploy.js';
 import { connect } from '../modules/ssh.js';
 
 async function main() {
-  const program = new Command('Deploy frida-server');
+  const program = new Command('Deploy and start frida-server');
   const args = useCommonArgs(program);
   const device = await getDeviceFromArg(args);
-
   const client = await connect(device);
 
   try {

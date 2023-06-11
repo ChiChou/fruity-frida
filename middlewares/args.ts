@@ -1,4 +1,4 @@
-import commander from 'commander';
+import { Command } from 'commander';
 
 export interface Options {
   usb: boolean;
@@ -7,9 +7,9 @@ export interface Options {
   host: string;
 }
 
-export type Program = commander.Command & Options;
+export type Program = Command & Options;
 
-export default function useCommonArgs(program: commander.Command) {
+export default function useCommonArgs(program: Command) {
   program
     .option('-U, --usb', 'connect to USB device')
     .option('-R, --remote', 'connect to remote frida-server')
