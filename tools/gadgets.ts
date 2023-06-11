@@ -5,11 +5,9 @@ import path from 'path';
 import colors from 'ansi-colors';
 import * as progress from 'cli-progress';
 
-import fileDirName from '../lib/dirname.js';
 import { DownloadDelegate, download } from '../modules/github.js';
 import { unxz } from '../modules/xz.js';
-
-const { __dirname } = fileDirName(import.meta);
+import { root } from '../lib/pathutil.js';
 
 const getToken = (() => {
   let token: string | undefined;
@@ -19,7 +17,7 @@ const getToken = (() => {
     token = process.env.GITHUB_TOKEN;
     if (token) return token;
 
-    const filename = path.join(__dirname, '..', '.github-token');
+    const filename = path.join(root(), '.github-token');
     token = (await fs.promises.readFile(filename)).toString();
     if (token) return token;
   }

@@ -3,15 +3,13 @@ import readline from 'readline';
 
 import { Client, ClientChannel } from 'ssh2';
 
-import fileDirName from '../lib/dirname.js';
 import { upload } from './ssh.js';
+import { resource } from '../lib/pathutil.js';
 
 const CANIDATES = [
   '/usr/libexec/debugserver', // iOS 16+
   '/Developer/usr/bin/debugserver',  // pre iOS 16
 ]
-
-const { __dirname } = fileDirName(import.meta);
 
 const DEBUGSERVER = '/tmp/debugserver';
 
@@ -67,7 +65,7 @@ export async function deploy(client: Client) {
     })
   }
 
-  const entXML = path.join(__dirname, '..', 'resources', 'debugserver.ent.xml');
+  const entXML = resource('debugserver.ent.xml');
   const remoteXML = '/tmp/ent.xml';
   await upload(client, entXML, remoteXML);
 
