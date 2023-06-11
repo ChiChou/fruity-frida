@@ -65,7 +65,7 @@ export async function deploy(client: Client) {
     })
   }
 
-  const entXML = resource('debugserver.ent.xml');
+  const entXML = resource('debugserver.xml');
   const remoteXML = '/tmp/ent.xml';
   await upload(client, entXML, remoteXML);
 
