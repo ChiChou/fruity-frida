@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-import '../out/tools/gadget.js'
+import '../out/tools/gadgets.js'
