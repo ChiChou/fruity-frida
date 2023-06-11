@@ -1,8 +1,9 @@
 import net from 'net';
 
 import { Command } from 'commander';
-import useCommonArgs from '../middlewares/args';
-import { getDeviceFromArg } from '../middlewares/device';
+
+import useCommonArgs from '../middlewares/args.js';
+import { getDeviceFromArg } from '../middlewares/device.js';
 
 async function main() {
   const program = new Command('iproxy');

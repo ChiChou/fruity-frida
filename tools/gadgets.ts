@@ -5,8 +5,8 @@ import os from 'os';
 import * as progress from 'cli-progress';
 import colors from 'ansi-colors';
 
-import { DownloadDelegate, download } from '../modules/github';
-import { unxz } from '../modules/xz';
+import { DownloadDelegate, download } from '../modules/github.js';
+import { unxz } from '../modules/xz.js';
 
 const getToken = (() => {
   let token: string | undefined;

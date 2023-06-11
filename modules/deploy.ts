@@ -5,9 +5,9 @@ import path from 'path';
 
 import { Client } from 'ssh2';
 
-import { Archive } from '../modules/ar';
-import { packages } from "../modules/cydia";
-import { interactive, write } from '../modules/ssh';
+import { Archive } from '../modules/ar.js';
+import { packages } from "../modules/cydia.js";
+import { interactive, write } from '../modules/ssh.js';
 
 
 async function latest() {

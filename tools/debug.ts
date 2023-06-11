@@ -4,12 +4,12 @@ import { AddressInfo } from 'net';
 import { Command } from 'commander';
 import { Device } from 'frida';
 
-import useCommonArgs from '../middlewares/args';
-import { getDeviceFromArg } from '../middlewares/device';
-import { attach, deploy, spawn } from '../modules/debugserver';
-import { findFreePort, proxy } from '../modules/iproxy';
-import { connect } from '../modules/ssh';
-import { apps } from '../modules/installerproxy';
+import useCommonArgs from '../middlewares/args.js';
+import { getDeviceFromArg } from '../middlewares/device.js';
+import { attach, deploy, spawn } from '../modules/debugserver.js';
+import { findFreePort, proxy } from '../modules/iproxy.js';
+import { connect } from '../modules/ssh.js';
+import { apps } from '../modules/installerproxy.js';
 
 enum DebugMode {
   Spawn,

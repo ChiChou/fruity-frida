@@ -1,6 +1,6 @@
 import * as frida from "frida";
 
-import { Options } from "./args";
+import { Options } from './args.js';
 
 export function getDeviceFromArg(opt: Options): Promise<frida.Device> {
   if (opt.usb) {

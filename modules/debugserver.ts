@@ -2,7 +2,7 @@ import path from 'path';
 import readline from 'readline';
 
 import { Client, ClientChannel } from 'ssh2';
-import { upload } from './ssh';
+import { upload } from './ssh.js';
 
 const CANIDATES = [
   '/usr/libexec/debugserver', // iOS 16+

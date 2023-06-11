@@ -1,11 +1,11 @@
-import commander from 'commander';
+import { Command } from 'commander';
 
-import { connect, interactive } from '../modules/ssh';
-import useCommonArgs from '../middlewares/args';
-import { getDeviceFromArg } from '../middlewares/device';
+import { connect, interactive } from '../modules/ssh.js';
+import useCommonArgs from '../middlewares/args.js';
+import { getDeviceFromArg } from '../middlewares/device.js';
 
 async function main() {
-  const program = new commander.Command('Shell');
+  const program = new Command('Shell');
   const args = useCommonArgs(program);
   const device = await getDeviceFromArg(args);
   const client = await connect(device);
