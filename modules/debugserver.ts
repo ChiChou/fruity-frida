@@ -2,12 +2,16 @@ import path from 'path';
 import readline from 'readline';
 
 import { Client, ClientChannel } from 'ssh2';
+
+import fileDirName from '../lib/dirname.js';
 import { upload } from './ssh.js';
 
 const CANIDATES = [
   '/usr/libexec/debugserver', // iOS 16+
   '/Developer/usr/bin/debugserver',  // pre iOS 16
 ]
+
+const { __dirname } = fileDirName(import.meta);
 
 const DEBUGSERVER = '/tmp/debugserver';
 

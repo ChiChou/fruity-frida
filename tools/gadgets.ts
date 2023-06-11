@@ -1,12 +1,15 @@
-import path from 'path';
 import fs, { PathLike } from 'fs';
 import os from 'os';
+import path from 'path';
 
-import * as progress from 'cli-progress';
 import colors from 'ansi-colors';
+import * as progress from 'cli-progress';
 
+import fileDirName from '../lib/dirname.js';
 import { DownloadDelegate, download } from '../modules/github.js';
 import { unxz } from '../modules/xz.js';
+
+const { __dirname } = fileDirName(import.meta);
 
 const getToken = (() => {
   let token: string | undefined;
