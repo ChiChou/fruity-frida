@@ -46,5 +46,5 @@ By default, all the scripts choose one of your iDevices connected to USB. These 
 -h, --help           display help for command
 ```
 
-However, I can't promise they will work, since the lockdown (a protocol to talk to your device, just like libimobiledevices)
-functions from [frida-node](https://github.com/frida/frida-node) seems to only support USB connection.
+However, I can't guarantee they will work, since the lockdown (a protocol to talk to your devices, just like libimobiledevices)
+functions from [frida-node](https://github.com/frida/frida-node) seems to only support USB connections.
