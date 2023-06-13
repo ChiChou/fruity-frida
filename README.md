@@ -24,6 +24,7 @@ npm install -g fruity-frida
 
 * `ios-shell` open a shell to iOS using default credentials (root/alpine). iproxy is automatically included so you don't need extra steps.
 * `ios-debug` debug process or apps on jailbroken iOS. Automatically deploy debugserver, do the port forwarding and connect to it.
+* `ios-pull` pull files and directories from iOS
 * `iproxy-js` iproxy written in js
 * `run-frida-server` automatically download, deploy frida-server to iOS and start it. Supports checkm8 based rootless environments.
 * `get-ios-gadget` download gadget-ios.dylib from GitHub

@@ -1,6 +1,6 @@
 {
   "name": "fruity-frida",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "./out/index.js",
   "bin": {
@@ -8,6 +8,7 @@
     "run-frida-server": "./bin/server.js",
     "iproxy-js": "./bin/iproxy.js",
     "ios-debug": "./bin/debug.js",
+    "ios-pull": "./bin/pull.js",
     "get-ios-gadget": "./bin/gadget.js"
   },
   "scripts": {
