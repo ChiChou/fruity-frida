@@ -3,7 +3,7 @@ import { promises as fsp } from 'fs';
 
 import { Client, ClientChannel } from 'ssh2';
 
-import { upload, write } from './ssh.js';
+import { write } from './scp.js';
 import { resource } from '../lib/pathutil.js';
 
 const CANIDATES = [
