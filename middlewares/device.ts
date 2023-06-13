@@ -1,7 +1,7 @@
 import * as frida from "frida";
 
-import { Program } from './args.js';
 import { Command } from "commander";
+import { Program } from './args.js';
 
 export function getDeviceFromArg(cmd: Command): Promise<frida.Device> {
   const opt = cmd as Program;

@@ -1,5 +1,6 @@
-import { Device, getUsbDevice } from 'frida';
 import { Duplex } from 'stream';
+
+import { Device } from 'frida';
 
 import BPlistCreator from 'bplist-creator';
 import BPlistParser from 'bplist-parser';
