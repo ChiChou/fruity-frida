@@ -11,7 +11,7 @@ const CANIDATES = [
   '/Developer/usr/bin/debugserver',  // pre iOS 16
 ]
 
-const DEBUGSERVER = '/tmp/debugserver';
+const DEBUGSERVER = '/var/root/debugserver';
 
 
 function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
@@ -72,21 +72,13 @@ export async function deploy(client: Client) {
     await write(client, content, remoteXML);
   }
 
-  let dest = DEBUGSERVER;
-
-  const probe = '/test.txt'
-  const hasRootFS = await cmd(`echo "test" > ${probe} && rm ${probe}`);
-  if (hasRootFS) {
-    dest = '/usr/bin/debugserver';
-  }
-
   for (const candiate of CANIDATES) {
     if (await cmd(`test -f ${candiate}`)) {
-      await cmd(`cp ${candiate} ${dest}`);
-      await cmd(`ldid -S${remoteXML} ${dest}`);
+      await cmd(`cp ${candiate} ${DEBUGSERVER}`);
+      await cmd(`ldid -S${remoteXML} ${DEBUGSERVER}`);
 
-      console.log(`signed ${candiate} debugserver to ${dest}`);
-      return dest;
+      console.log(`signed ${candiate} debugserver to ${DEBUGSERVER}`);
+      return DEBUGSERVER;
     }
   }
 
