@@ -41,14 +41,18 @@ function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
   })
 }
 
+function quote(filename: string) {
+  return `'${filename.replace(/(['\\])/g,'\\$1')}'`
+}
+
 // shell injection, but unvoidable
 export async function spawn(client: Client, server: string, path: string, port: number): Promise<ClientChannel> {
-  const cmd = `${server} -x backboard 127.1:${port} ${path}`;
+  const cmd = `${server} -x backboard 127.1:${port} ${quote(path)}`;
   return debugserver(client, cmd);
 }
 
 export function attach(client: Client, server: string, target: number | string, port: number) {
-  const cmd = `${server} 127.1:${port} -a ${target}`;
+  const cmd = `${server} 127.1:${port} -a ${quote(target.toString())}`;
   return debugserver(client, cmd);
 }
 
