@@ -62,9 +62,17 @@ async function getFridaDeb() {
         }
 
         const chunks: Buffer[] = [];
+        let total = 0;
         res
-          .on('data', (chunk) => chunks.push(chunk))
-          .on('end', () => resolve(Buffer.concat(chunks)))
+          .on('data', (chunk: Buffer) => {
+            chunks.push(chunk);
+            total += chunk.length;
+            process.stdout.write(`\rDownloaded ${total} bytes`)
+          })
+          .on('end', () => {
+            resolve(Buffer.concat(chunks));
+            console.log('\nDownload finished');
+          })
           .on('error', reject);
       });
     });
