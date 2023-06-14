@@ -82,7 +82,6 @@ export async function deploy(client: Client, cwd: string = '/tmp/frida') {
   const dest = '/tmp/data.tar.xz';
   const xz = await getFridaDeb();
 
-  // todo: check installation
   await write(client, xz, dest);
 
   const script = [
@@ -96,7 +95,6 @@ export async function deploy(client: Client, cwd: string = '/tmp/frida') {
 }
 
 export async function start(client: Client) {
-  // todo: configurable cwd
   const cwd = '/tmp/frida';
   await deploy(client);
 
