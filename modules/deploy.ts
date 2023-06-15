@@ -1,4 +1,4 @@
-import { constants, promises as fsp } from 'fs';
+import { PathLike, constants, createWriteStream, promises as fsp } from 'fs';
 import https from 'https';
 import os from 'os';
 import path from 'path';
@@ -34,61 +34,77 @@ function findInAr(data: Buffer, name: string) {
   throw new Error('Unable to find the data.tar.xz');
 }
 
-async function getFridaDeb() {
+function downloadTo(url: URL, dest: PathLike) {
+  return new Promise<void>((resolve, reject) => {
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`Unexpected status code: ${res.statusCode}`));
+        return;
+      }
+
+      let total = 0;
+      const stream = createWriteStream(dest);
+      res
+        .on('data', (chunk: Buffer) => {
+          total += chunk.length;
+          process.stdout.write(`\rDownloaded ${total} bytes`)
+        })
+        .on('end', () => {
+          resolve();
+          console.log('\nDownload finished');
+        })
+        .on('error', reject)
+        .pipe(stream);
+    });
+  });
+}
+
+async function getFridaDeb(force: boolean) {
   const cacheDir = path.join(os.homedir(), '.cache', 'frida');
+
+  const dirExists = (path: PathLike) => fsp.stat(path).then(
+    stats => stats.isDirectory()).catch(() => false);
+
+  const fileExists = (path: PathLike) => fsp.stat(path).then(
+    stats => stats.isFile()).catch(() => false);
+
+  let download: boolean | undefined = undefined;
+
+  if (force) {
+    download = true;
+  }
+
+  if (!dirExists(cacheDir)) {
+    await fsp.mkdir(cacheDir, { recursive: true });
+    download = true;
+  }
+
+  const defaultName = path.join(cacheDir, 're.frida.server.deb');
+  if (!download && await fileExists(defaultName)) {
+    return defaultName;
+  }
+
   const url = await latest();
   const filename = path.basename(url.pathname);
   const cache = path.join(cacheDir, filename);
 
-  const exists = (path: string) =>
-    fsp.access(path, constants.F_OK)
-      .then(() => true)
-      .catch(() => false);
-
-  if (!await exists(cacheDir)) {
-    await fsp.mkdir(cacheDir, { recursive: true });
-  }
-
-  let ar: Buffer;
-
-  if (!await exists(cache)) {
+  if (await fileExists(cache) && !download) {
+    console.log('found cache');
+  } else {
     console.log(`downloading frida-server from ${url}`);
 
-    ar = await new Promise<Buffer>((resolve, reject) => {
-      https.get(url, (res) => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`Unexpected status code: ${res.statusCode}`));
-          return;
-        }
-
-        const chunks: Buffer[] = [];
-        let total = 0;
-        res
-          .on('data', (chunk: Buffer) => {
-            chunks.push(chunk);
-            total += chunk.length;
-            process.stdout.write(`\rDownloaded ${total} bytes`)
-          })
-          .on('end', () => {
-            resolve(Buffer.concat(chunks));
-            console.log('\nDownload finished');
-          })
-          .on('error', reject);
-      });
-    });
-
-    await fsp.writeFile(cache, ar);
-  } else {
-    console.log('found cache');
-    ar = await fsp.readFile(cache);
+    await downloadTo(url, cache);
+    if (await fileExists(defaultName)) await fsp.rm(defaultName);
+    await fsp.symlink(cache, defaultName);
   }
-
-  return findInAr(ar, 'data.tar.xz');
+  return cache;
 }
 
-export async function deploy(client: Client, cwd: string = '/tmp/frida') {
+export async function deploy(client: Client, cwd: string, upgrade: boolean) {
   const dest = '/tmp/data.tar.xz';
-  const xz = await getFridaDeb();
+  const deb = await getFridaDeb(upgrade);
+  const ar = await fsp.readFile(deb);
+  const xz = findInAr(ar, 'data.tar.xz');
 
   await write(client, xz, dest);
 
@@ -102,9 +118,9 @@ export async function deploy(client: Client, cwd: string = '/tmp/frida') {
   await interactive(client, script.join('\n'));
 }
 
-export async function start(client: Client) {
+export async function start(client: Client, upgrade=false) {
   const cwd = '/tmp/frida';
-  await deploy(client);
+  await deploy(client, cwd, upgrade);
 
   const script = [
     `CRYPTEX_MOUNT_PATH=${cwd} ${cwd}/usr/sbin/frida-server`
