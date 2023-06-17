@@ -6,7 +6,7 @@ import useCommonArgs from '../middlewares/args.js';
 import { getDeviceFromArg } from '../middlewares/device.js';
 
 async function main() {
-  const program = useCommonArgs(new Command('iproxy'));
+  const program = useCommonArgs(new Command('iproxy-js'));
 
   program
     .argument('source', 'source port')

@@ -7,7 +7,7 @@ import { start } from '../modules/deploy.js';
 import { connect } from '../modules/ssh.js';
 
 async function main() {
-  const program = useCommonArgs(new Command('Deploy and start frida-server'));
+  const program = useCommonArgs(new Command('run-frida-server'));
   program.option('-f, --force', 'force upgrade');
 
   const device = await getDeviceFromArg(program.parse(process.argv));

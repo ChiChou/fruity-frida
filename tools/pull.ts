@@ -6,7 +6,7 @@ import { Pull } from '../modules/scp.js';
 import { connect } from '../modules/ssh.js';
 
 async function main() {
-  const program = useCommonArgs(new Command('pull'))
+  const program = useCommonArgs(new Command('ios-pull'))
     .parse(process.argv);
 
   if (program.args.length < 2) {
