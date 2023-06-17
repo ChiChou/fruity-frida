@@ -19,6 +19,8 @@ enum DebugMode {
 
 async function debug(device: Device, mode: DebugMode, target: string) {
   const client = await connect(device);
+  const emptyHandler = () => {};
+
   try {
     const serverPath = await deploy(client);
     const port = await findFreePort(device);
@@ -46,6 +48,7 @@ async function debug(device: Device, mode: DebugMode, target: string) {
       '--one-line', 'reg read'];
 
     const lldb = cp.spawn('lldb', scripts, { stdio: 'inherit' });
+    process.on('SIGINT', emptyHandler);
     await new Promise<void>((resolve) => {
       lldb.on('exit', () => {
         server.close();
@@ -57,6 +60,7 @@ async function debug(device: Device, mode: DebugMode, target: string) {
   } finally {
     client.end();
   }
+  process.off('SIGINT', emptyHandler);
 }
 
 
