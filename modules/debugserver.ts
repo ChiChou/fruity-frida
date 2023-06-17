@@ -45,8 +45,12 @@ function quote(filename: string) {
   return `'${filename.replace(/(['\\])/g,'\\$1')}'`
 }
 
-// shell injection, but unvoidable
 export async function spawn(client: Client, server: string, path: string, port: number): Promise<ClientChannel> {
+  const cmd = `${server} 127.1:${port} ${quote(path)}`;
+  return debugserver(client, cmd);
+}
+
+export async function backboard(client: Client, server: string, path: string, port: number): Promise<ClientChannel> {
   const cmd = `${server} -x backboard 127.1:${port} ${quote(path)}`;
   return debugserver(client, cmd);
 }
