@@ -35,7 +35,6 @@ function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
         }
       });
 
-      stream.stdin.write('killall debugserver\n');
       stream.stdin.write(cmd + '\n');
     });
   })
