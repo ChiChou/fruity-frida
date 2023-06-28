@@ -11,6 +11,11 @@ import { interactive } from './ssh.js';
 import { write } from './scp.js';
 
 
+const dirExists = (path: PathLike) => fsp.stat(path).then(
+  stats => stats.isDirectory()).catch(() => false);
+const fileExists = (path: PathLike) => fsp.stat(path).then(
+  stats => stats.isFile()).catch(() => false);
+
 async function latest() {
   const REPO_URL = new URL('https://build.frida.re');
   for await (const item of packages(REPO_URL)) {
@@ -62,12 +67,6 @@ function downloadTo(url: URL, dest: PathLike) {
 async function getFridaDeb(force: boolean) {
   const cacheDir = path.join(os.homedir(), '.cache', 'frida');
 
-  const dirExists = (path: PathLike) => fsp.stat(path).then(
-    stats => stats.isDirectory()).catch(() => false);
-
-  const fileExists = (path: PathLike) => fsp.stat(path).then(
-    stats => stats.isFile()).catch(() => false);
-
   let download: boolean | undefined = undefined;
 
   if (force) {
@@ -118,9 +117,12 @@ export async function deploy(client: Client, cwd: string, upgrade: boolean) {
   await interactive(client, script.join('\n'));
 }
 
-export async function start(client: Client, upgrade=false) {
+export async function start(client: Client, upgrade = false) {
   const cwd = '/tmp/frida';
-  await deploy(client, cwd, upgrade);
+
+  if (!fileExists(`${cwd}/usr/sbin/frida-server`) || upgrade) {
+    await deploy(client, cwd, upgrade);
+  }
 
   const script = [
     `CRYPTEX_MOUNT_PATH=${cwd} ${cwd}/usr/sbin/frida-server`
@@ -128,3 +130,4 @@ export async function start(client: Client, upgrade=false) {
 
   await interactive(client, script.join('\n'));
 }
+
