@@ -62,10 +62,10 @@ function downloadTo(url: URL, dest: PathLike) {
 async function getFridaDeb(force: boolean) {
   const cacheDir = path.join(os.homedir(), '.cache', 'frida');
 
-  const dirExists = (path: PathLike) => fsp.stat(path).then(
+  const dirExists = (p: PathLike) => fsp.stat(p).then(
     stats => stats.isDirectory()).catch(() => false);
 
-  const fileExists = (path: PathLike) => fsp.stat(path).then(
+  const fileExists = (p: PathLike) => fsp.stat(p).then(
     stats => stats.isFile()).catch(() => false);
 
   let download: boolean | undefined = undefined;
@@ -74,7 +74,7 @@ async function getFridaDeb(force: boolean) {
     download = true;
   }
 
-  if (!dirExists(cacheDir)) {
+  if (!await dirExists(cacheDir)) {
     await fsp.mkdir(cacheDir, { recursive: true });
     download = true;
   }
