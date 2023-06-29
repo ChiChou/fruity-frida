@@ -8,7 +8,7 @@ import { Client } from 'ssh2';
 import { Archive } from './ar.js';
 import { packages } from "./cydia.js";
 import { interactive } from './ssh.js';
-import { write } from './scp.js';
+import { quote, write } from './scp.js';
 
 
 async function latest() {
@@ -108,10 +108,11 @@ export async function deploy(client: Client, root: string, upgrade: boolean) {
 
   await write(client, xz, dest);
 
+  const quoted = quote(root);
   const script = [
-    `mkdir -p ${root}`,
-    `cd ${root}`,
-    `tar -xf ${dest} -C ${root}`,
+    `mkdir -p ${quoted}`,
+    `cd ${quoted}`,
+    `tar -xf ${dest} -C ${quoted}`,
     `exit`
   ];
 
@@ -119,10 +120,17 @@ export async function deploy(client: Client, root: string, upgrade: boolean) {
 }
 
 export async function start(client: Client, root: string, upgrade=false) {
+  await new Promise<void>((resolve) => {
+    client.exec(`[ -x ]`, (err) => {
+      console.error(err);
+      resolve();
+    });
+  });
+
   await deploy(client, root, upgrade);
 
   const script = [
-    `CRYPTEX_MOUNT_PATH=${root} ${root}/usr/sbin/frida-server`
+    `CRYPTEX_MOUNT_PATH=${quote(root)} ${quote(root + '/usr/sbin/frida-server')}`
   ];
 
   await interactive(client, script.join('\n'));
