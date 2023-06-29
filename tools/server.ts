@@ -9,6 +9,7 @@ import { connect } from '../modules/ssh.js';
 async function main() {
   const program = useCommonArgs(new Command('run-frida-server'));
   program.option('-f, --force', 'force upgrade');
+  program.option('-p, --path <deploy root>', 'path root to deploy frida-server (e.g. /var/jb/frida)', '/tmp/frida')
 
   const device = await getDeviceFromArg(program.parse(process.argv));
 
@@ -26,7 +27,7 @@ async function main() {
   const client = await connect(device);
 
   try {
-    await start(client, program.getOptionValue('force'));
+    await start(client, program.getOptionValue('path'), program.getOptionValue('force'));
   } finally {
     client.end();
   }

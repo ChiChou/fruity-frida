@@ -100,7 +100,7 @@ async function getFridaDeb(force: boolean) {
   return cache;
 }
 
-export async function deploy(client: Client, cwd: string, upgrade: boolean) {
+export async function deploy(client: Client, root: string, upgrade: boolean) {
   const dest = '/tmp/data.tar.xz';
   const deb = await getFridaDeb(upgrade);
   const ar = await fsp.readFile(deb);
@@ -109,21 +109,20 @@ export async function deploy(client: Client, cwd: string, upgrade: boolean) {
   await write(client, xz, dest);
 
   const script = [
-    `mkdir -p ${cwd}`,
-    `cd ${cwd}`,
-    `tar -xf ${dest} -C ${cwd}`,
+    `mkdir -p ${root}`,
+    `cd ${root}`,
+    `tar -xf ${dest} -C ${root}`,
     `exit`
   ];
 
   await interactive(client, script.join('\n'));
 }
 
-export async function start(client: Client, upgrade=false) {
-  const cwd = '/tmp/frida';
-  await deploy(client, cwd, upgrade);
+export async function start(client: Client, root: string, upgrade=false) {
+  await deploy(client, root, upgrade);
 
   const script = [
-    `CRYPTEX_MOUNT_PATH=${cwd} ${cwd}/usr/sbin/frida-server`
+    `CRYPTEX_MOUNT_PATH=${root} ${root}/usr/sbin/frida-server`
   ];
 
   await interactive(client, script.join('\n'));
