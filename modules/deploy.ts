@@ -106,6 +106,7 @@ export async function deploy(client: Client, root: string, upgrade: boolean) {
   const ar = await fsp.readFile(deb);
   const xz = findInAr(ar, 'data.tar.xz');
 
+  // todo: use unxz() locally and finish scp push function
   await write(client, xz, dest);
 
   const quoted = quote(root);
@@ -119,18 +120,33 @@ export async function deploy(client: Client, root: string, upgrade: boolean) {
   await interactive(client, script.join('\n'));
 }
 
-export async function start(client: Client, root: string, upgrade=false) {
-  await new Promise<void>((resolve) => {
-    client.exec(`[ -x ]`, (err) => {
-      console.error(err);
-      resolve();
-    });
-  });
+export async function start(client: Client, root: string, upgrade = false) {
+  const quoted = quote(root);
+  const server = quote(root + '/usr/sbin/frida-server');
 
-  await deploy(client, root, upgrade);
+  let override = upgrade;
+
+  if (!upgrade) {
+    // check existing frida-server
+    const installed = await new Promise<boolean>((resolve) => {
+      client.exec(`[ -x ${server} ]`, (err, stream) => {
+        stream.on('exit', (code) => {
+          // hack: type defination is wrong,
+          // `code` should be a number here.
+          // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65926
+          resolve(`${code}` === '0');
+        });
+      });
+    });
+
+    override = !installed;
+  }
+
+  if (override)
+    await deploy(client, root, upgrade);
 
   const script = [
-    `CRYPTEX_MOUNT_PATH=${quote(root)} ${quote(root + '/usr/sbin/frida-server')}`
+    `CRYPTEX_MOUNT_PATH=${quoted} ${server}`
   ];
 
   await interactive(client, script.join('\n'));
