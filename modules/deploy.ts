@@ -1,4 +1,4 @@
-import { PathLike, constants, createWriteStream, promises as fsp } from 'fs';
+import { PathLike, createWriteStream, promises as fsp } from 'fs';
 import https from 'https';
 import os from 'os';
 import path from 'path';
