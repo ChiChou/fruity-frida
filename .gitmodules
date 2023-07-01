@@ -1,0 +1,3 @@
+[submodule "wasm/deps/xz"]
+	path = wasm/deps/xz
+	url = https://github.com/tukaani-project/xz.git
