@@ -166,7 +166,7 @@ class SCPReceiver extends Duplex {
         this.output.write(chunk);
         this.#remain -= chunk.length;
       }
-      
+
       this.emit('progress', src, this.output.bytesWritten, this.#size);
     } else {
       callback(new Error('Invalid state'));
@@ -218,7 +218,7 @@ export class Pull extends EventEmitter {
 
 export async function write(client: Client, data: Buffer, remote: string) {
   const exec = promisify(client.exec.bind(client));
-  const stream = await exec(`scp -t ${remote}`);
+  const stream = await exec(`scp -t ${quote(remote)}`);
   const basename = path.basename(remote);
   const info = `C0644 ${data.length} ${basename}\n`;
 
