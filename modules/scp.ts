@@ -1,10 +1,13 @@
 import { EventEmitter } from 'events';
-import { PathLike, WriteStream, createWriteStream, promises as fsp } from 'fs';
+import { PathLike, WriteStream, createWriteStream, promises as fsp, Stats, createReadStream } from 'fs';
 import path from 'path';
 import { Duplex } from 'stream';
 import { promisify } from 'util';
 
 import { Client } from 'ssh2';
+
+import { getUsbDevice } from 'frida';
+import { connect } from './ssh.js';
 
 
 const State = {
@@ -215,6 +218,107 @@ export class Pull extends EventEmitter {
 
 }
 
+class SCPWriter extends Duplex {
+  constructor(private local: string, private recursive: boolean) {
+    super();
+  }
+
+  _read(size: number) {
+    // do nothing
+  }
+
+  _write(chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
+    if (chunk.length === 1 && chunk[0] === 0) {
+      callback();
+      return;
+    }
+
+    console.log(chunk)
+    console.log(chunk.toString())
+    callback();
+    // callback(new Error('SCP responded non-zero status'));
+  }
+
+  begin() {
+    this.#visit(this.local.toString());
+  }
+
+  async #visit(item: string) {
+    const basename = path.basename(item);
+    const stat = await fsp.stat(item);
+    if (stat.isDirectory()) {
+      this.#create(stat, basename);
+      const files = await fsp.readdir(item);
+      for (const file of files) {
+        await this.#visit(path.join(item, file));
+      }
+      this.#popd();
+    } else if (stat.isFile()) {
+      this.#create(stat, basename);
+      await new Promise((resolve, reject) => {
+        createReadStream(item)
+          .on('data', chunk => this.push(chunk))
+          .on('end', resolve)
+          .on('error', reject);
+      });
+      this.push(Buffer.from([0]));
+    }
+  }
+
+  #create(stat: Stats, basename: string) {
+    this.push(Buffer.from(stat.isDirectory() ? 'D' : 'C'));
+
+    const mode = (stat.mode & 0o777).toString(8);
+    const meta = `0${mode} ${stat.size} ${basename}\n`;
+    this.push(Buffer.from(meta));
+
+    const k = 1000;
+    const mtime = stat.mtime.getTime();
+    const atime = stat.atime.getTime();
+    const ts = `T${Math.floor(mtime / k)} ${mtime % k} ${Math.floor(atime / k)} ${atime % k}\n`;
+    this.push(Buffer.from(ts));
+  }
+
+  #popd() {
+    this.push(Buffer.from('E\n'));
+  }
+}
+
+export class Push extends EventEmitter {
+  #client: Client;
+  #recursive: boolean;
+  #local: string;
+  #remote: string;
+
+  constructor(client: Client, local: string, remote: string, recursive = true) {
+    super();
+
+    this.#client = client;
+    this.#recursive = recursive;
+    this.#local = local;
+    this.#remote = quote(remote);
+  }
+
+  async execute() {
+    const exec = promisify(this.#client.exec.bind(this.#client));
+    const stream = await exec(`scp -v -t ${this.#recursive ? '-r' : ''} ${this.#remote}`);
+
+    const sender = new SCPWriter(this.#local, this.#recursive);
+    stream.stdout.pipe(sender);
+    sender.pipe(stream.stdin);
+
+    sender.begin();
+
+    stream.stderr.pipe(process.stderr);
+
+    await new Promise((resolve, reject) => {
+      sender
+        .on('finish', resolve)
+        .on('error', reject);
+    });
+  }
+
+}
 
 export async function write(client: Client, data: Buffer, remote: string) {
   const exec = promisify(client.exec.bind(client));
@@ -228,3 +332,9 @@ export async function write(client: Client, data: Buffer, remote: string) {
   stdin.write(data);
   stdin.write('\x00');
 }
+
+(async () => {
+  const dev = await getUsbDevice();
+  const client = await connect(dev);
+  await new Push(client, '/tmp/foo', '/tmp/bar').execute();
+})()
