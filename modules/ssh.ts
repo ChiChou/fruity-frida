@@ -1,9 +1,17 @@
 import frida from 'frida';
+import { readFile } from 'fs/promises';
 
-import { Client } from 'ssh2';
+import { Client, ConnectConfig } from 'ssh2';
 
+const __port_cache: Map<string, number> = new Map();
 
 export async function scan(device: frida.Device) {
+  if (process.env['SSH_PORT'])
+    return parseInt(process.env['SSH_PORT']);
+
+  const cached = __port_cache.get(device.id);
+  if (cached) return cached;
+
   const canidates = [22, 44]
   for (const port of canidates) {
     const ok = await device.openChannel(`tcp:${port}`)
@@ -25,20 +33,27 @@ export async function scan(device: frida.Device) {
   throw Error('Port not found. Target device must be jailbroken and with sshd running.');
 }
 
-export async function connect(device: frida.Device, user = 'root', password = 'alpine') {
+export async function connect(device: frida.Device) {
   const port = await scan(device);
   const channel = await device.openChannel(`tcp:${port}`);
+
+  const config: ConnectConfig = { sock: channel };
+
+  if ('SSH_PRIVATE_KEY' in process.env) {
+    config.privateKey = await readFile(process.env['SSH_PRIVATE_KEY'] as string);
+    if ('SSH_PASSPHRASE' in process.env)
+      config.passphrase = process.env['SSH_PASSPHRASE'];
+  } else {
+    config.username = process.env['SSH_USERNAME'] || 'root';
+    config.password = process.env['SSH_PASSWORD'] || 'alpine';
+  }
 
   const client = new Client();
   return new Promise<Client>((resolve, reject) => {
     client
       .on('ready', () => resolve(client))
       .on('error', reject)
-      .connect({
-        sock: channel,
-        username: user,
-        password,
-      });
+      .connect(config);
   });
 }
 
