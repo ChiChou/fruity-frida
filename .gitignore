@@ -1,6 +1,8 @@
 .github-token
 .DS_Store
 
+.ccls-cache/
+
 *.deb
 
 __pycache__/
