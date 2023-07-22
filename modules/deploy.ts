@@ -130,12 +130,8 @@ export async function start(client: Client, root: string, upgrade = false) {
     // check existing frida-server
     const installed = await new Promise<boolean>((resolve) => {
       client.exec(`[ -x ${server} ]`, (err, stream) => {
-        stream.on('exit', (code) => {
-          // hack: type defination is wrong,
-          // `code` should be a number here.
-          // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65926
-          resolve(`${code}` === '0');
-        });
+        if (err) return resolve(false);
+        stream.on('exit', code => resolve(code === 0));
       });
     });
 
