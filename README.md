@@ -47,5 +47,12 @@ By default, all the scripts choose one of your iDevices connected to USB. These 
 -h, --help           display help for command
 ```
 
+## SSH Environment Variables
+
+The default credentials for ssh is `root` / `alpine`. 
+You can change them by setting environment variables:
+
+`SSH_PRIVATE_KEY`, `SSH_PASSPHRASE`, `SSH_PORT`, `SSH_USERNAME`, `SSH_PASSWORD`.
+
 However, I can't guarantee they will work, since the lockdown (a protocol to talk to your devices, just like libimobiledevices)
 functions from [frida-node](https://github.com/frida/frida-node) seems to only support USB connections.
