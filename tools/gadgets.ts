@@ -52,6 +52,7 @@ class Delegate implements DownloadDelegate {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onReady(size: number, filename: string): void {
     this.size = humanFileSize(size);
     this.bar.start(size, 0, {

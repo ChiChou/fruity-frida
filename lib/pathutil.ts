@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'url';
-import { sep, dirname, basename, join } from 'path';
+import { dirname, basename, join } from 'path';
 
 const __root = findRoot();
 

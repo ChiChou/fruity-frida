@@ -26,7 +26,7 @@ async function debug(device: Device, mode: DebugMode, target: string) {
     const port = await findFreePort(device);
     console.log('remote free port', port)
 
-    async function getStream() {
+    const getStream = async() => {
       if (mode === DebugMode.Backboard) {
         return backboard(client, serverPath, target, port);
       } else if (mode === DebugMode.Spawn) {

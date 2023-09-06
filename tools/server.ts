@@ -21,7 +21,7 @@ async function main() {
     console.log('frida-server is already running. Exiting...');
     return;
   } catch(_) {
-
+    // to nothing
   }
 
   const client = await connect(device);
