@@ -80,7 +80,7 @@ export async function interactive(client: Client, initialCommand?: string) {
 
       const onResize = () => {
         const [w, h] = process.stdout.getWindowSize();
-        stream.setWindow(`${stdout.rows}`, `${stdout.columns}`, `${w}`, `${h}`)
+        stream.setWindow(stdout.rows, stdout.columns, w, h)
       };
 
       const cleanup = () => {
