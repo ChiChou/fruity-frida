@@ -7,7 +7,13 @@ import { getDeviceFromArg } from '../middlewares/device.js';
 async function main() {
   const program = useCommonArgs(new Command('ios-shell'));
   const device = await getDeviceFromArg(program.parse(process.argv));
-  const client = await connect(device);
+ 
+  // get the environment variable named SSH_USERNAME
+  var user_name = process.env.SSH_USERNAME
+  if (user_name == undefined || user_name == '') {
+      user_name = 'root'
+  }
+  const client = await connect(device,user_name);
 
   try {
     await interactive(client);
