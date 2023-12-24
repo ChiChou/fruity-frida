@@ -1,10 +1,13 @@
 import readline from 'readline';
+import * as cp from 'child_process';
 import { promises as fsp } from 'fs';
 
 import { Client, ClientChannel } from 'ssh2';
 
 import { write } from './scp.js';
 import { resource } from '../lib/pathutil.js';
+import { platform } from 'os';
+import { mkdtemp, stat } from 'fs/promises';
 
 const CANIDATES = [
   '/usr/libexec/debugserver', // iOS 16+
@@ -41,7 +44,7 @@ function debugserver(client: Client, cmd: string): Promise<ClientChannel> {
 }
 
 function quote(filename: string) {
-  return `'${filename.replace(/(['\\])/g,'\\$1')}'`
+  return `'${filename.replace(/(['\\])/g, '\\$1')}'`
 }
 
 export async function spawn(client: Client, server: string, path: string, port: number): Promise<ClientChannel> {
@@ -59,7 +62,7 @@ export function attach(client: Client, server: string, target: number | string, 
   return debugserver(client, cmd);
 }
 
-export async function deploy(client: Client) {
+export async function deploy(client: Client, version: string) {
   function cmd(cmdline: string) {
     return new Promise((resolve) => {
       client.exec(cmdline, (err, stream) => {
@@ -87,6 +90,51 @@ export async function deploy(client: Client) {
       console.log(`signed ${candiate} debugserver to ${DEBUGSERVER}`);
       return DEBUGSERVER;
     }
+  }
+
+  if (platform() === 'darwin') {
+    const shortVersion = version.split('.').slice(0, 2).join('.');
+
+    let ddi = '';
+    for (const suffix of ['', '-beta']) {
+      const xcode = `/Applications/Xcode${suffix}.app`;
+      const support = `${xcode}/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport`;
+      const dmg = `${support}/${shortVersion}/DeveloperDiskImage.dmg`;
+
+      const exists = await stat(dmg).then(s => s.isFile()).catch(() => false);
+      if (exists) {
+        ddi = dmg;
+        break;
+      }
+    }
+
+    if (!ddi)
+      throw new Error('Unable to find debugserver on device or Xcode.');
+
+    const mountpoint = await mkdtemp('/tmp/DeveloperDiskImage');
+    console.log(mountpoint);
+    const hdiutil = (...args: string[]) => new Promise<void>((resolve, reject) => {
+      const child = cp.execFile('/usr/bin/hdiutil', args);
+      child.on('exit', (code, signal) => {
+        console.log(code, signal);
+        if (code === 0) resolve();
+        else reject(new Error(`Unable to mount ${ddi}`));
+      });
+    });
+
+    await hdiutil('attach', '-mountpoint', mountpoint, ddi);
+
+    try {
+      const server = `${mountpoint}/usr/bin/debugserver`;
+      const content = await fsp.readFile(server);
+      await write(client, content, DEBUGSERVER);
+      await cmd(`ldid -S${remoteXML} ${DEBUGSERVER}`);
+      console.log(`copied and signed debugserver from Xcode to ${DEBUGSERVER}`);
+    } finally {
+      await hdiutil('detach', mountpoint);
+    }
+
+    return DEBUGSERVER;
   }
 
   throw new Error('debugserver binary not found. Please make sure DDI is mounted.');

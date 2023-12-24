@@ -19,14 +19,23 @@ enum DebugMode {
 
 async function debug(device: Device, mode: DebugMode, target: string) {
   const client = await connect(device);
-  const emptyHandler = () => {};
+  const emptyHandler = () => { };
+
+  const params = await device.querySystemParameters();
 
   try {
-    const serverPath = await deploy(client);
-    const port = await findFreePort(device);
-    console.log('remote free port', port)
+    if (!/i(pad)?os/.test(params.os.id))
+      throw new Error(`The OS type ${params.os.name} is not supported`);
 
-    const getStream = async() => {
+    const { version } = params.os;
+    if (!version)
+      throw new Error('Unable to detect device OS version');
+
+    const serverPath = await deploy(client, version);
+    const port = await findFreePort(device);
+    console.log('remote free port', port);
+
+    const getStream = async () => {
       if (mode === DebugMode.Backboard) {
         return backboard(client, serverPath, target, port);
       } else if (mode === DebugMode.Spawn) {
