@@ -115,8 +115,7 @@ export async function deploy(client: Client, version: string) {
     console.log(mountpoint);
     const hdiutil = (...args: string[]) => new Promise<void>((resolve, reject) => {
       const child = cp.execFile('/usr/bin/hdiutil', args);
-      child.on('exit', (code, signal) => {
-        console.log(code, signal);
+      child.on('exit', (code) => {
         if (code === 0) resolve();
         else reject(new Error(`Unable to mount ${ddi}`));
       });
