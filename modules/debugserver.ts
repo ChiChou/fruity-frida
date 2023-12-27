@@ -128,6 +128,7 @@ export async function deploy(client: Client, version: string) {
       const server = `${mountpoint}/usr/bin/debugserver`;
       const content = await fsp.readFile(server);
       await write(client, content, DEBUGSERVER);
+      await cmd(`chmod 0777 ${DEBUGSERVER}`);
       await cmd(`ldid -S${remoteXML} ${DEBUGSERVER}`);
       console.log(`copied and signed debugserver from Xcode to ${DEBUGSERVER}`);
     } finally {
