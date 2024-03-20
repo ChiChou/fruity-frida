@@ -7,17 +7,22 @@ import { connect } from '../modules/ssh.js';
 
 async function main() {
   const program = useCommonArgs(new Command('ios-pull'))
+    .usage('[options] <source1> [<source2> ...] [<destination>]')
     .parse(process.argv);
 
-  if (program.args.length < 2) {
+  const { args } = program;
+
+  if (args.length === 1) {
+    args.push('.');
+  } else if (args.length === 0) {
     program.help();
   }
 
   const device = await getDeviceFromArg(program);
   const client = await connect(device);
 
-  const sources = program.args.slice(0, -1);
-  const destination = program.args[program.args.length - 1];
+  const sources = args.slice(0, -1);
+  const destination = args[args.length - 1];
 
   try {
     for (const source of sources) {
