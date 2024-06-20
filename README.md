@@ -49,7 +49,7 @@ By default, all the scripts choose one of your iDevices connected to USB. These 
 
 ## SSH Environment Variables
 
-The default credentials for ssh is `root` / `alpine`. 
+The default credentials for ssh is `mobile` / `alpine`. 
 You can change them by setting environment variables:
 
 `SSH_PRIVATE_KEY`, `SSH_PASSPHRASE`, `SSH_PORT`, `SSH_USERNAME`, `SSH_PASSWORD`.

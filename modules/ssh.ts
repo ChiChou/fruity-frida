@@ -44,7 +44,7 @@ export async function connect(device: frida.Device) {
     if ('SSH_PASSPHRASE' in process.env)
       config.passphrase = process.env['SSH_PASSPHRASE'];
   } else {
-    config.username = process.env['SSH_USERNAME'] || 'root';
+    config.username = process.env['SSH_USERNAME'] || 'mobile';
     config.password = process.env['SSH_PASSWORD'] || 'alpine';
   }
 
